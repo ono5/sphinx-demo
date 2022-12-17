@@ -24,3 +24,5 @@ delete command
 ```bash
 kubectl delete -f sphinx-doc.yaml
 ```
+
+check app on chrome -> `localhost`
