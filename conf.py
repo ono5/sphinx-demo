@@ -20,8 +20,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Sphinx'
-copyright = '2019, kikagaku'
-author = 'kikagaku'
+copyright = '2022, sample'
+author = 'sample'
 
 # The short X.Y version
 version = ''
@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'nbsphinx',
     'sphinx.ext.mathjax',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -50,9 +51,6 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 source_suffix = ['.rst', '.md']
-source_parsers = {
-    '.md' : 'recommonmark.parser.CommonMarkParser'
-}
 # source_suffix = '.rst'
 
 # The master toctree document.
@@ -70,7 +68,7 @@ latex_docclass = {'manual': 'jsbook'}
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', '.env', 'README.md']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -166,3 +164,36 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+
+# 以下のエラーの対策
+# Notebook error:
+# PandocMissing in src/2.ipynb:
+# Pandoc wasn't found.
+# Please check that pandoc is installed:
+# https://pandoc.org/installing.html
+# make: *** [html] Error 2
+
+from inspect import getsourcefile
+import os
+
+# Get path to directory containing this file, conf.py.
+DOCS_DIRECTORY = os.path.dirname(os.path.abspath(getsourcefile(lambda: 0)))
+
+def ensure_pandoc_installed(_):
+    import pypandoc
+
+    # Download pandoc if necessary. If pandoc is already installed and on
+    # the PATH, the installed version will be used. Otherwise, we will
+    # download a copy of pandoc into docs/bin/ and add that to our PATH.
+    pandoc_dir = os.path.join(DOCS_DIRECTORY, "bin")
+    # Add dir containing pandoc binary to the PATH environment variable
+    if pandoc_dir not in os.environ["PATH"].split(os.pathsep):
+        os.environ["PATH"] += os.pathsep + pandoc_dir
+    pypandoc.ensure_pandoc_installed(
+        targetfolder=pandoc_dir,
+        delete_installer=True,
+    )
+
+
+def setup(app):
+    app.connect("builder-inited", ensure_pandoc_installed)
