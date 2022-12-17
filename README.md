@@ -88,3 +88,10 @@ extensions = [
 
 source_suffix = ['.rst', '.md']
 ```
+
+### Docker
+
+```bash
+docker build -t sample-doc .
+docker container run --name sample-doc --rm -p 8080:80 sample-doc
+```
